@@ -1,0 +1,32 @@
+# Node
+node_modules/
+.next/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+.env
+venv/
+.venv/
+.env.local
+
+# Django
+media/
+staticfiles/
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Docker
+*.pid
+/tmp/
+
+# Testing
+coverage/
+pytest_cache/
+
+# Misc
+*.sqlite3

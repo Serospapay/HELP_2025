@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+venv/
+.git
+.gitignore
+/media
+/static
+/node_modules
+npm-debug.log

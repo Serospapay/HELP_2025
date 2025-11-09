@@ -1,0 +1,16 @@
+"""
+/**
+ * @file: apps.py
+ * @description: Конфігурація додатку payments.
+ * @dependencies: django.apps.AppConfig
+ * @created: 2025-11-08
+ */
+"""
+
+from django.apps import AppConfig
+
+
+class PaymentsConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'payments'
+    verbose_name = "Платежі та пожертви"

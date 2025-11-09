@@ -40,15 +40,16 @@ export default async function CampaignsPage({ searchParams }: CampaignsPageProps
 
   return (
     <div className="space-y-12 pb-16">
-      <section className="border-b border-white/10 bg-slate-900/60 py-12">
-        <div className="container space-y-4">
-          <p className="text-xs uppercase tracking-wide text-slate-400">
+      <section className="relative border-b border-white/10 bg-slate-900/40 py-12">
+        <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-transparent" aria-hidden="true" />
+        <div className="container relative space-y-4">
+          <p className="text-xs uppercase tracking-wide text-slate-300">
             Каталог кампаній
           </p>
           <h1 className="text-3xl font-semibold text-white md:text-4xl">
             Допоможіть там, де зараз найбільше потребують
           </h1>
-          <p className="max-w-2xl text-sm text-slate-300">
+          <p className="max-w-2xl text-sm text-slate-200/90">
             Фільтруйте активні ініціативи за напрямками, регіонами та статусом.
             Подавайте заявку як волонтер або підтримуйте фінансово.
           </p>
@@ -58,7 +59,7 @@ export default async function CampaignsPage({ searchParams }: CampaignsPageProps
       <section className="container space-y-8">
         <form
           method="get"
-          className="grid gap-4 rounded-3xl border border-white/10 bg-slate-900/60 p-6 shadow-lg shadow-black/20 md:grid-cols-4"
+          className="grid gap-4 rounded-3xl border border-white/10 bg-slate-900/50 p-6 shadow-lg shadow-black/30 backdrop-blur md:grid-cols-4"
         >
           <label className="md:col-span-2">
             <span className="text-xs font-semibold uppercase tracking-wide text-slate-300">

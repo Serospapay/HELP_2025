@@ -29,15 +29,21 @@ async function fetchJson<T>(path: string, options: FetchOptions = {}) {
   const { query, nextOptions, headers, ...rest } = options;
   const url = buildURL(path, query);
 
-  const response = await fetch(url, {
+  const init: RequestInit & { next?: { revalidate?: number } } = {
     headers: {
       "Content-Type": "application/json",
       ...headers,
     },
-    cache: "no-store",
     ...rest,
-    next: nextOptions,
-  });
+  };
+
+  if (!nextOptions) {
+    init.cache = rest.cache ?? "no-store";
+  } else {
+    init.next = nextOptions;
+  }
+
+  const response = await fetch(url, init);
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -53,13 +59,16 @@ export const getCampaigns = cache(
   async (params: FetchOptions["query"] = {}): Promise<Campaign[]> => {
     return fetchJson<Campaign[]>("/v1/campaigns/", {
       query: params,
+      nextOptions: { revalidate: 45 },
     });
   },
 );
 
 export const getCampaignBySlug = cache(
   async (slug: string): Promise<Campaign> => {
-    return fetchJson<Campaign>(`/v1/campaigns/${slug}/`);
+    return fetchJson<Campaign>(`/v1/campaigns/${slug}/`, {
+      nextOptions: { revalidate: 45 },
+    });
   },
 );
 

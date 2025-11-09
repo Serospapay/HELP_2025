@@ -48,11 +48,15 @@ export default async function CampaignDetailPage({ params }: CampaignPageProps) 
 
   return (
     <article className="space-y-12 pb-20">
-      <header className="border-b border-white/10 bg-slate-900/60 py-12">
-        <div className="container space-y-6">
+      <header className="relative border-b border-white/10 bg-slate-900/40 py-12">
+        <div
+          className="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-transparent"
+          aria-hidden="true"
+        />
+        <div className="container relative space-y-6">
           <div className="flex flex-wrap items-center gap-3">
             <StatusBadge status={campaign.status} />
-            <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-300">
+            <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-200">
               {campaign.category?.name ?? "Категорія"}
             </span>
           </div>
@@ -86,25 +90,25 @@ export default async function CampaignDetailPage({ params }: CampaignPageProps) 
           coordinatorId={campaign.coordinator?.id}
         />
 
-        <div className="grid gap-6 md:grid-cols-4">
-          <div className="rounded-3xl border border-white/10 bg-slate-900/60 p-6">
-            <p className="text-xs uppercase tracking-wide text-slate-400">
+          <div className="grid gap-6 md:grid-cols-4">
+          <div className="rounded-3xl border border-white/10 bg-slate-900/50 p-6 shadow-inner shadow-black/30 backdrop-blur">
+            <p className="text-xs uppercase tracking-wide text-slate-300">
               Локація
             </p>
             <p className="mt-2 text-lg font-semibold text-white">
               {campaign.location_name}
             </p>
             {campaign.region && (
-              <p className="text-sm text-slate-300">{campaign.region}</p>
+            <p className="text-sm text-slate-200/80">{campaign.region}</p>
             )}
             {campaign.location_address && (
-              <p className="mt-2 text-xs text-slate-400">
+            <p className="mt-2 text-xs text-slate-400">
                 {campaign.location_address}
               </p>
             )}
           </div>
-          <div className="rounded-3xl border border-white/10 bg-slate-900/60 p-6">
-            <p className="text-xs uppercase tracking-wide text-slate-400">
+          <div className="rounded-3xl border border-white/10 bg-slate-900/50 p-6 shadow-inner shadow-black/30 backdrop-blur">
+            <p className="text-xs uppercase tracking-wide text-slate-300">
               Період
             </p>
             <p className="mt-2 text-lg font-semibold text-white">
@@ -114,8 +118,8 @@ export default async function CampaignDetailPage({ params }: CampaignPageProps) 
               Дата оновлення: {formatDate(campaign.updated_at)}
             </p>
           </div>
-          <div className="rounded-3xl border border-white/10 bg-slate-900/60 p-6">
-            <p className="text-xs uppercase tracking-wide text-slate-400">
+          <div className="rounded-3xl border border-white/10 bg-slate-900/50 p-6 shadow-inner shadow-black/30 backdrop-blur">
+            <p className="text-xs uppercase tracking-wide text-slate-300">
               Необхідно волонтерів
             </p>
             <p className="mt-2 text-lg font-semibold text-white">
@@ -127,8 +131,8 @@ export default async function CampaignDetailPage({ params }: CampaignPageProps) 
               Координатор: {campaign.coordinator?.email}
             </p>
           </div>
-          <div className="rounded-3xl border border-white/10 bg-slate-900/60 p-6">
-            <p className="text-xs uppercase tracking-wide text-slate-400">
+          <div className="rounded-3xl border border-white/10 bg-slate-900/50 p-6 shadow-inner shadow-black/30 backdrop-blur">
+            <p className="text-xs uppercase tracking-wide text-slate-300">
               Фінансова ціль
             </p>
             {target > 0 ? (
@@ -139,9 +143,9 @@ export default async function CampaignDetailPage({ params }: CampaignPageProps) 
                 <p className="text-xs text-slate-400">
                   Зібрано: {formatCurrency(current)} ({progress}%)
                 </p>
-                <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-800">
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-800/80">
                   <div
-                    className="h-full rounded-full bg-brand-500 transition-all"
+                    className="h-full rounded-full bg-gradient-to-r from-brand-400 to-brand-200 transition-all"
                     style={{ width: `${progress}%` }}
                     aria-hidden="true"
                   />
@@ -306,7 +310,7 @@ export default async function CampaignDetailPage({ params }: CampaignPageProps) 
           >
             Контакти координатора
           </h2>
-          <div className="grid gap-4 rounded-3xl border border-white/10 bg-slate-900/60 p-6 md:grid-cols-3">
+          <div className="grid gap-4 rounded-3xl border border-white/10 bg-slate-900/50 p-6 backdrop-blur md:grid-cols-3">
             <div>
               <p className="text-xs uppercase tracking-wide text-slate-400">
                 Email

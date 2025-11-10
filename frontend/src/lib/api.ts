@@ -29,7 +29,7 @@ async function fetchJson<T>(path: string, options: FetchOptions = {}) {
   const { query, nextOptions, headers, ...rest } = options;
   const url = buildURL(path, query);
 
-  const init: RequestInit & { next?: { revalidate?: number } } = {
+  const init: RequestInit & { next?: { revalidate?: number | false } } = {
     headers: {
       "Content-Type": "application/json",
       ...headers,

@@ -5,7 +5,11 @@
  * @created: 2025-11-09
  */
 
-import { defineConfig, devices, type WebServerConfig } from "@playwright/test";
+import { defineConfig, devices } from "@playwright/test";
+
+type WebServerConfig = NonNullable<
+  NonNullable<ReturnType<typeof defineConfig>["webServer"]>
+>;
 
 const DEFAULT_PORT = Number(process.env.PLAYWRIGHT_APP_PORT ?? "3000");
 const baseURL =

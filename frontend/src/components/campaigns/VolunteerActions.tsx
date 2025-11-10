@@ -55,6 +55,11 @@ export function VolunteerActions({
 
     let isMounted = true;
     setFetchState("loading");
+    if (!tokens) {
+      setFetchState("idle");
+      return;
+    }
+
     getVolunteerApplications(tokens, { campaign: String(campaignSlug) })
       .then((data) => {
         if (!isMounted) return;

@@ -130,18 +130,11 @@ test.describe("Флоу волонтера та координатора", () =>
 
       expect(volunteer.user.role).toBe("volunteer");
 
-    // 2. Волонтер автентифікується через токени та подає заявку на кампанію.
-    await page.addInitScript(
-      ({ key, value }) => {
-        window.localStorage.setItem(key, value);
-      },
-      {
-        key: "auth-tokens",
-        value: JSON.stringify(volunteer.tokens),
-      },
-    );
-    await page.goto("/dashboard");
-    await page.waitForResponse("**/v1/auth/me/");
+    // 2. Волонтер заходить у систему через UI та подає заявку на кампанію.
+    await page.goto("/auth/login");
+    await page.getByLabel("Email").fill(volunteerEmail);
+    await page.getByLabel("Пароль").fill(TEST_PASSWORD);
+    await page.getByRole("button", { name: "Увійти" }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
 
       await page.goto(`/campaigns/${campaign.slug}`);
@@ -159,18 +152,11 @@ test.describe("Флоу волонтера та координатора", () =>
 
       // 3. Координатор у паралельному контексті підтверджує заявку через UI.
     coordinatorContext = await browser.newContext();
-    await coordinatorContext.addInitScript(
-      ({ key, value }) => {
-        window.localStorage.setItem(key, value);
-      },
-      {
-        key: "auth-tokens",
-        value: JSON.stringify(coordinator.tokens),
-      },
-    );
       const coordinatorPage = await coordinatorContext.newPage();
-    await coordinatorPage.goto("/dashboard");
-    await coordinatorPage.waitForResponse("**/v1/auth/me/");
+    await coordinatorPage.goto("/auth/login");
+    await coordinatorPage.getByLabel("Email").fill(coordinatorEmail);
+    await coordinatorPage.getByLabel("Пароль").fill(TEST_PASSWORD);
+    await coordinatorPage.getByRole("button", { name: "Увійти" }).click();
     await expect(coordinatorPage).toHaveURL(/\/dashboard$/);
 
       const pendingApplicationCard = coordinatorPage

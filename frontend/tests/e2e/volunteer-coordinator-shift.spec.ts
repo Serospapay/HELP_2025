@@ -120,7 +120,7 @@ test.describe("Флоу волонтера та координатора", () =>
         await deleteCampaignShift(shift.id, coordinatorAccessToken);
       });
 
-      const volunteer = await registerUser({
+    const volunteer = await registerUser({
         email: volunteerEmail,
         password: TEST_PASSWORD,
         first_name: "Playwright",
@@ -130,12 +130,19 @@ test.describe("Флоу волонтера та координатора", () =>
 
       expect(volunteer.user.role).toBe("volunteer");
 
-      // 2. Волонтер заходить у систему через UI та подає заявку на кампанію.
-      await page.goto("/auth/login");
-      await page.getByLabel("Email").fill(volunteerEmail);
-      await page.getByLabel("Пароль").fill(TEST_PASSWORD);
-      await page.getByRole("button", { name: "Увійти" }).click();
-      await expect(page).toHaveURL(/\/dashboard$/);
+    // 2. Волонтер автентифікується через токени та подає заявку на кампанію.
+    await page.addInitScript(
+      ({ key, value }) => {
+        window.localStorage.setItem(key, value);
+      },
+      {
+        key: "auth-tokens",
+        value: JSON.stringify(volunteer.tokens),
+      },
+    );
+    await page.goto("/dashboard");
+    await page.waitForResponse("**/v1/auth/me/");
+    await expect(page).toHaveURL(/\/dashboard$/);
 
       await page.goto(`/campaigns/${campaign.slug}`);
       const applyButton = page.getByRole("button", { name: "Подати заявку волонтера" });
@@ -147,22 +154,34 @@ test.describe("Флоу волонтера та координатора", () =>
       await applyButton.click();
 
       await expect(
-        page.getByText("Очікує підтвердження", { exact: false }),
-      ).toBeVisible();
+        page.getByTestId("volunteer-application-status"),
+      ).toHaveAttribute("data-status", "pending");
 
       // 3. Координатор у паралельному контексті підтверджує заявку через UI.
-      coordinatorContext = await browser.newContext();
+    coordinatorContext = await browser.newContext();
+    await coordinatorContext.addInitScript(
+      ({ key, value }) => {
+        window.localStorage.setItem(key, value);
+      },
+      {
+        key: "auth-tokens",
+        value: JSON.stringify(coordinator.tokens),
+      },
+    );
       const coordinatorPage = await coordinatorContext.newPage();
-      await coordinatorPage.goto("/auth/login");
-      await coordinatorPage.getByLabel("Email").fill(coordinatorEmail);
-      await coordinatorPage.getByLabel("Пароль").fill(TEST_PASSWORD);
-      await coordinatorPage.getByRole("button", { name: "Увійти" }).click();
-      await expect(coordinatorPage).toHaveURL(/\/dashboard$/);
+    await coordinatorPage.goto("/dashboard");
+    await coordinatorPage.waitForResponse("**/v1/auth/me/");
+    await expect(coordinatorPage).toHaveURL(/\/dashboard$/);
 
-      const pendingApplicationCard = coordinatorPage.getByText(volunteerEmail, {
-        exact: false,
-      });
+      const pendingApplicationCard = coordinatorPage
+        .getByTestId("coordinator-application-card")
+        .filter({
+          hasText: volunteerEmail,
+        });
       await expect(pendingApplicationCard).toBeVisible();
+      await expect(
+        pendingApplicationCard.getByTestId("coordinator-application-status"),
+      ).toHaveAttribute("data-status", "pending");
 
       await coordinatorPage
         .getByRole("button", { name: "Підтвердити" })
@@ -170,19 +189,15 @@ test.describe("Флоу волонтера та координатора", () =>
         .click();
 
       await expect(
-        coordinatorPage.getByText("Заявку підтверджено", { exact: false }),
-      ).toBeVisible();
-
-      await expect(
-        coordinatorPage.getByText("Підтверджено", { exact: false }),
-      ).toBeVisible();
+        pendingApplicationCard.getByTestId("coordinator-application-status"),
+      ).toHaveAttribute("data-status", "approved");
 
       // 4. Волонтер оновлює сторінку кампанії та записується на зміну.
       await page.reload();
 
       await expect(
-        page.getByText("Підтверджено", { exact: false }),
-      ).toBeVisible();
+        page.getByTestId("volunteer-application-status"),
+      ).toHaveAttribute("data-status", "approved");
 
       const joinButton = page.getByRole("button", {
         name: "Приєднатися до зміни",

@@ -1,3 +1,4 @@
+import type { HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
 type StatusVariant =
@@ -17,9 +18,10 @@ type StatusVariant =
   | "declined"
   | "withdrawn";
 
-interface StatusBadgeProps {
+interface StatusBadgeProps extends HTMLAttributes<HTMLSpanElement> {
   status: StatusVariant;
   className?: string;
+  labelOverride?: string;
 }
 
 const STATUS_CONFIG: Record<
@@ -82,20 +84,26 @@ const STATUS_CONFIG: Record<
   },
 };
 
-export function StatusBadge({ status, className }: StatusBadgeProps) {
+export function StatusBadge({
+  status,
+  className,
+  labelOverride,
+  ...props
+}: StatusBadgeProps) {
   const config =
     STATUS_CONFIG[status] ??
     STATUS_CONFIG.draft ?? { label: status, className: "bg-slate-700" };
 
   return (
     <span
+      {...props}
       className={cn(
         "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide",
         config.className,
         className,
       )}
     >
-      {config.label}
+      {labelOverride ?? config.label}
     </span>
   );
 }

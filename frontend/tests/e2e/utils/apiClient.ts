@@ -46,12 +46,13 @@ async function apiRequest<T>(
   });
 
   if (!response.ok) {
+    const rawBody = await response.text();
     let detail: string;
     try {
-      const json = await response.json();
-      detail = json.detail ?? JSON.stringify(json);
+      const parsed = JSON.parse(rawBody);
+      detail = parsed.detail ?? JSON.stringify(parsed);
     } catch {
-      detail = await response.text();
+      detail = rawBody;
     }
     throw new Error(
       `[API ${response.status}] ${detail || response.statusText} (${url})`,

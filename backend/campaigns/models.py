@@ -55,7 +55,7 @@ class CampaignCategory(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = slugify(self.name, allow_unicode=True)
         super().save(*args, **kwargs)
 
 
@@ -139,7 +139,7 @@ class Campaign(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            base_slug = slugify(self.title)[:240]
+            base_slug = slugify(self.title, allow_unicode=True)[:240]
             if not base_slug:
                 base_slug = f"campaign-{uuid.uuid4().hex[:8]}"
             slug = base_slug

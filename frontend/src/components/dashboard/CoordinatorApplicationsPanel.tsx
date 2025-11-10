@@ -82,13 +82,15 @@ export function CoordinatorApplicationsPanel() {
         tokens,
       );
       setApplications((prev) =>
-        prev.map((item) => (item.id === updated.id ? updated : item)),
+        prev.map((item) =>
+          item.id === applicationId ? { ...item, status: updated.status } : item,
+        ),
       );
       addToast({
         variant: "success",
         title:
           nextStatus === "approved"
-            ? "Заявку підтверджено"
+            ? "Статус заявки оновлено"
             : "Заявку відхилено",
       });
     } catch (err) {
@@ -163,6 +165,9 @@ export function CoordinatorApplicationsPanel() {
               {apps.map((application) => (
                 <div
                   key={application.id}
+                  data-testid="coordinator-application-card"
+                  data-application-id={String(application.id)}
+                  data-volunteer-email={application.volunteer.email}
                   className={cn(
                     "flex flex-col gap-3 rounded-xl border border-white/10 bg-slate-950/60 p-4 md:flex-row md:items-center md:justify-between",
                     application.status === "pending"
@@ -176,6 +181,9 @@ export function CoordinatorApplicationsPanel() {
                         application.volunteer.email}
                     </p>
                     <p className="text-xs text-slate-400">
+                      {application.volunteer.email}
+                    </p>
+                    <p className="text-xs text-slate-400">
                       Подано {formatDate(application.created_at)}
                     </p>
                     {application.motivation && (
@@ -185,7 +193,14 @@ export function CoordinatorApplicationsPanel() {
                     )}
                   </div>
                   <div className="flex flex-col items-start gap-2 md:items-end">
-                    <StatusBadge status={application.status} />
+                    <StatusBadge
+                      status={application.status}
+                      labelOverride={
+                        application.status === "approved" ? "Схвалено" : undefined
+                      }
+                      data-testid="coordinator-application-status"
+                      data-status={application.status}
+                    />
                     {application.status === "pending" ? (
                       <div className="flex gap-2">
                         <button
@@ -223,7 +238,20 @@ export function CoordinatorApplicationsPanel() {
                           }
                         />
                       </div>
-                    ) : null}
+                    ) : (
+                      <p
+                        className={cn(
+                          "text-xs text-slate-300",
+                          application.status === "declined" && "text-rose-200",
+                        )}
+                      >
+                        {application.status === "approved"
+                          ? "Заявку підтверджено"
+                          : application.status === "declined"
+                            ? "Заявку відхилено"
+                            : "Статус заявки синхронізовано"}
+                      </p>
+                    )}
                   </div>
                 </div>
               ))}

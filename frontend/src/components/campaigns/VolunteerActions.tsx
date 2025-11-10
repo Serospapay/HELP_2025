@@ -42,9 +42,12 @@ export function VolunteerActions({
   const isCampaignCoordinator =
     user?.id && coordinatorId ? user.id === coordinatorId : false;
   const isAdmin = user?.role === "admin";
+  const hasAccessToken = Boolean(tokens?.access);
+  const effectiveAuthStatus =
+    authStatus === "guest" && hasAccessToken ? "authenticated" : authStatus;
 
   useEffect(() => {
-    if (authStatus !== "authenticated" || !tokens?.access || isCampaignCoordinator) {
+    if (!hasAccessToken || isCampaignCoordinator) {
       setApplications(null);
       setFetchState("idle");
       return;
@@ -72,7 +75,7 @@ export function VolunteerActions({
     return () => {
       isMounted = false;
     };
-  }, [authStatus, tokens, campaignSlug, isCampaignCoordinator]);
+  }, [authStatus, tokens, campaignSlug, isCampaignCoordinator, hasAccessToken]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -119,9 +122,9 @@ export function VolunteerActions({
     }
   }
 
-  if (authStatus !== "authenticated") {
+  if (!hasAccessToken) {
     return (
-      <div className="rounded-3xl border border-white/10 bg-slate-900/60 p-6 text-sm text-slate-300">
+      <div className="space-y-4 rounded-3xl border border-white/10 bg-slate-900/60 p-6 text-sm text-slate-300">
         <p>
           Щоб подати заявку,{" "}
           <Link
@@ -139,6 +142,49 @@ export function VolunteerActions({
           </Link>
           .
         </p>
+        <button
+          type="button"
+          disabled
+          className="inline-flex w-full justify-center rounded-full bg-slate-800/70 px-6 py-3 text-sm font-semibold text-slate-400 opacity-80 md:w-auto"
+        >
+          Подати заявку волонтера
+        </button>
+      </div>
+    );
+  }
+
+  if (effectiveAuthStatus === "idle" || effectiveAuthStatus === "loading") {
+    return (
+      <div
+        className="space-y-4 rounded-3xl border border-white/10 bg-slate-900/60 p-6 text-sm text-slate-300"
+        aria-busy="true"
+      >
+        <p>Підтверджуємо ваш статус волонтера…</p>
+        <button
+          type="button"
+          disabled
+          className="inline-flex w-full justify-center rounded-full bg-slate-800/70 px-6 py-3 text-sm font-semibold text-slate-400 opacity-80 md:w-auto"
+        >
+          Подати заявку волонтера
+        </button>
+      </div>
+    );
+  }
+
+  if (effectiveAuthStatus !== "authenticated") {
+    return (
+      <div
+        className="space-y-4 rounded-3xl border border-white/10 bg-slate-900/60 p-6 text-sm text-slate-300"
+        aria-busy="true"
+      >
+        <p>Синхронізуємо дані профілю…</p>
+        <button
+          type="button"
+          disabled
+          className="inline-flex w-full justify-center rounded-full bg-slate-800/70 px-6 py-3 text-sm font-semibold text-slate-400 opacity-80 md:w-auto"
+        >
+          Подати заявку волонтера
+        </button>
       </div>
     );
   }
@@ -154,8 +200,18 @@ export function VolunteerActions({
 
   if (fetchState === "loading") {
     return (
-      <div className="rounded-3xl border border-white/10 bg-slate-900/60 p-6 text-sm text-slate-300">
-        Завантажуємо вашу заявку...
+      <div
+        className="space-y-4 rounded-3xl border border-white/10 bg-slate-900/60 p-6 text-sm text-slate-300"
+        aria-busy="true"
+      >
+        <p>Завантажуємо вашу заявку...</p>
+        <button
+          type="button"
+          disabled
+          className="inline-flex w-full justify-center rounded-full bg-slate-800/70 px-6 py-3 text-sm font-semibold text-slate-400 opacity-80 md:w-auto"
+        >
+          Подати заявку волонтера
+        </button>
       </div>
     );
   }
@@ -164,7 +220,11 @@ export function VolunteerActions({
     return (
       <div className="space-y-4 rounded-3xl border border-white/10 bg-slate-900/60 p-6 shadow-lg shadow-black/20">
         <div className="flex items-center gap-3">
-          <StatusBadge status={currentApplication.status} />
+          <StatusBadge
+            status={currentApplication.status}
+            data-testid="volunteer-application-status"
+            data-status={currentApplication.status}
+          />
           <span className="text-sm text-slate-200">
             Подано {new Date(currentApplication.created_at).toLocaleDateString("uk-UA")}
           </span>

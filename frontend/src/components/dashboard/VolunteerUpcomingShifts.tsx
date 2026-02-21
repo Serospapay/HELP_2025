@@ -7,7 +7,7 @@ import { authStatusAtom, tokensAtom } from "@/lib/auth";
 import {
   getMyUpcomingShiftAssignments,
   leaveCampaignShift,
-} from "@/lib/endpoints";
+} from "@/lib/api";
 import type { ShiftAssignmentSummary } from "@/types";
 import { formatDate, formatTimeRange, cn } from "@/lib/utils";
 import { useToast } from "@/components/common/toast/ToastContext";

@@ -17,4 +17,8 @@ RUN pip install --upgrade pip && \
 
 COPY . /app
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Копіюємо entrypoint в корінь (volume не перезапише), виправляємо CRLF для Windows
+COPY entrypoint.sh /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

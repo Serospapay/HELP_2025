@@ -1,13 +1,16 @@
-import Link from "next/link";
 import type { Metadata } from "next";
-import { getCampaigns } from "@/lib/api";
+import { getCampaigns, getCampaignCategories } from "@/lib/api";
 import { CampaignGrid } from "@/components/campaigns/CampaignGrid";
+import { CampaignFilters } from "@/components/campaigns/CampaignFilters";
+import { CampaignsCreateLink } from "@/components/campaigns/CampaignsCreateLink";
 
-const STATUS_OPTIONS: { value: string; label: string }[] = [
-  { value: "published", label: "Опубліковано" },
-  { value: "in_progress", label: "У процесі" },
-  { value: "completed", label: "Завершені" },
-];
+function getParam(
+  sp: { [key: string]: string | string[] | undefined } | undefined,
+  key: string,
+): string {
+  const v = sp?.[key];
+  return Array.isArray(v) ? (v[0] ?? "") : (v ?? "");
+}
 
 export const metadata: Metadata = {
   title: "Кампанії",
@@ -15,107 +18,55 @@ export const metadata: Metadata = {
     "Знайдіть волонтерські кампанії за напрямком, регіоном та статусом. Долучайтесь як волонтер або донор.",
 };
 
-interface CampaignsPageProps {
+export default async function CampaignsPage({
+  searchParams,
+}: {
   searchParams?: { [key: string]: string | string[] | undefined };
-}
-
-export default async function CampaignsPage({ searchParams }: CampaignsPageProps) {
+}) {
   const params = {
-    search: Array.isArray(searchParams?.search)
-      ? searchParams?.search?.[0]
-      : searchParams?.search ?? "",
-    status: Array.isArray(searchParams?.status)
-      ? searchParams?.status?.[0]
-      : searchParams?.status ?? "published",
-    region: Array.isArray(searchParams?.region)
-      ? searchParams?.region?.[0]
-      : searchParams?.region ?? "",
+    search: getParam(searchParams, "search"),
+    status: getParam(searchParams, "status") || "published",
+    region: getParam(searchParams, "region"),
+    category: getParam(searchParams, "category"),
+    coordinator: getParam(searchParams, "coordinator"),
+    has_funding: getParam(searchParams, "has_funding"),
   };
 
-  const campaigns = await getCampaigns({
-    status: params.status,
-    search: params.search,
-    region: params.region,
-  }).catch(() => null);
+  const [campaigns, categories] = await Promise.all([
+    getCampaigns({
+      status: params.status,
+      search: params.search || undefined,
+      region: params.region || undefined,
+      category: params.category || undefined,
+      coordinator: params.coordinator || undefined,
+      has_funding: params.has_funding || undefined,
+    }).catch(() => null),
+    getCampaignCategories().catch(() => []),
+  ]);
 
   return (
     <div className="space-y-12 pb-16">
       <section className="relative border-b border-white/10 bg-slate-900/40 py-12">
         <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-transparent" aria-hidden="true" />
-        <div className="container relative space-y-4">
-          <p className="text-xs uppercase tracking-wide text-slate-300">
-            Каталог кампаній
-          </p>
-          <h1 className="text-3xl font-semibold text-white md:text-4xl">
-            Допоможіть там, де зараз найбільше потребують
-          </h1>
-          <p className="max-w-2xl text-sm text-slate-200/90">
-            Фільтруйте активні ініціативи за напрямками, регіонами та статусом.
-            Подавайте заявку як волонтер або підтримуйте фінансово.
-          </p>
+        <div className="container relative flex flex-wrap items-end justify-between gap-4">
+          <div className="space-y-4">
+            <p className="text-xs uppercase tracking-wide text-slate-300">
+              Каталог кампаній
+            </p>
+            <h1 className="text-3xl font-semibold text-white md:text-4xl">
+              Допоможіть там, де зараз найбільше потребують
+            </h1>
+            <p className="max-w-2xl text-sm text-slate-200/90">
+              Фільтруйте активні ініціативи за напрямками, регіонами та статусом.
+              Подавайте заявку як волонтер або підтримуйте фінансово.
+            </p>
+          </div>
+          <CampaignsCreateLink />
         </div>
       </section>
 
       <section className="container space-y-8">
-        <form
-          method="get"
-          className="grid gap-4 rounded-3xl border border-white/10 bg-slate-900/50 p-6 shadow-lg shadow-black/30 backdrop-blur md:grid-cols-4"
-        >
-          <label className="md:col-span-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-slate-300">
-              Пошук за назвою чи описом
-            </span>
-            <input
-              type="search"
-              name="search"
-              defaultValue={params.search}
-              placeholder="Наприклад, логістика у Львові"
-              className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-400/60"
-            />
-          </label>
-          <label>
-            <span className="text-xs font-semibold uppercase tracking-wide text-slate-300">
-              Статус
-            </span>
-            <select
-              name="status"
-              defaultValue={params.status}
-              className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-sm text-slate-100 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-400/60"
-            >
-              {STATUS_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            <span className="text-xs font-semibold uppercase tracking-wide text-slate-300">
-              Регіон
-            </span>
-            <input
-              type="text"
-              name="region"
-              defaultValue={params.region}
-              placeholder="Область або місто"
-              className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-400/60"
-            />
-          </label>
-          <div className="flex items-end gap-3 md:col-span-4">
-            <button
-              type="submit"
-              className="inline-flex items-center rounded-full bg-brand-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
-            >
-              Застосувати фільтри
-            </button>
-            <Link
-              href="/campaigns"
-              className="inline-flex items-center rounded-full border border-white/20 px-5 py-3 text-sm font-semibold text-white transition hover:border-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
-            >
-              Скинути
-            </Link>
-          </div>
-        </form>
+        <CampaignFilters categories={categories} currentParams={params} />
 
         <div className="flex items-center justify-between text-sm text-slate-300">
           <p>

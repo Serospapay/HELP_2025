@@ -36,6 +36,25 @@ export interface CampaignStageInput {
   due_date?: string | null;
 }
 
+export interface CampaignCreateInput {
+  title: string;
+  short_description: string;
+  description: string;
+  status?: "draft" | "published";
+  category: number;
+  location_name: string;
+  location_address?: string;
+  region?: string;
+  target_amount?: number | null;
+  required_volunteers?: number;
+  start_date?: string | null;
+  end_date?: string | null;
+  contact_email?: string;
+  contact_phone?: string;
+}
+
+export interface CampaignUpdateInput extends Partial<CampaignCreateInput> {}
+
 export interface CampaignShiftInput {
   title: string;
   description?: string;
@@ -114,6 +133,7 @@ export interface User {
   phone_number?: string;
   is_verified: boolean;
   is_active: boolean;
+  is_staff?: boolean;
   date_joined?: string;
 }
 

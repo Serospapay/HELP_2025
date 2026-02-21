@@ -5,8 +5,9 @@ import { FormEvent, useState } from "react";
 import {
   createCampaignStage,
   deleteCampaignStage,
-} from "@/lib/endpoints";
-import { authStatusAtom, currentUserAtom, tokensAtom } from "@/lib/auth";
+} from "@/lib/api";
+import { authStatusAtom, tokensAtom } from "@/lib/auth";
+import { useCanEditCampaign } from "@/hooks/useRoles";
 import type { CampaignStage, CampaignStageInput } from "@/types";
 import { cn, formatDate } from "@/lib/utils";
 import { useToast } from "@/components/common/toast/ToastContext";
@@ -24,8 +25,10 @@ export function CoordinatorStageManager({
   initialStages,
 }: CoordinatorStageManagerProps) {
   const authStatus = useAtomValue(authStatusAtom);
-  const currentUser = useAtomValue(currentUserAtom);
   const tokens = useAtomValue(tokensAtom);
+  const canEditBase = useCanEditCampaign(coordinatorId);
+  const canEdit =
+    authStatus === "authenticated" && tokens?.access && canEditBase;
   const [stages, setStages] = useState(() =>
     [...initialStages].sort(
       (a, b) => (a.order ?? 999) - (b.order ?? 999),
@@ -34,11 +37,6 @@ export function CoordinatorStageManager({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { addToast } = useToast();
-
-  const canEdit =
-    authStatus === "authenticated" &&
-    tokens?.access &&
-    (currentUser?.role === "admin" || currentUser?.id === coordinatorId);
 
   if (!canEdit) {
     return null;

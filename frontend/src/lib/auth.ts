@@ -1,6 +1,6 @@
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
-import { getMe } from "@/lib/endpoints";
+import { getMe } from "@/lib/api";
 import type { Tokens, User } from "@/types";
 
 export const tokensAtom = atomWithStorage<Tokens | null>("auth-tokens", null);

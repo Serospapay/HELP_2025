@@ -12,7 +12,7 @@
 
 ## Технологічний стек
 - **Backend**: Python 3.12, Django 5, DRF, PostgreSQL, Redis, Celery, SimpleJWT.
-- **Frontend**: Next.js 14 (TypeScript), TailwindCSS, Radix UI, Jotai (стан), React Query (дані).
+- **Frontend**: Next.js 14 (TypeScript), TailwindCSS, Radix UI, Jotai (стан).
 - **Інфраструктура**: Docker Compose (backend, frontend, db, redis, celery-worker), start-скрипт для Windows, `.env` через `infra/`.
 - **Тестування**: `pytest` (API), Playwright e2e (волонтер → координатор → зміна), `npm run lint/build`.
 
@@ -25,6 +25,20 @@ docs/       # План доставлення, архітектурні мате
 start-project.bat # Windows-скрипт для швидкого запуску середовища
 docker-compose.yml
 ```
+
+## Демо-користувачі
+
+При першому запуску backend автоматично створює демо-дані (команда `seed_demo_data`). Логін-паролі для перевірки:
+
+| Роль | Email | Пароль |
+|------|-------|--------|
+| Адміністратор | admin@help.test | Admin123! |
+| Координатор | coordinator@help.test | Coordinator123! |
+| Волонтер (підтверджений) | volunteer1@help.test | Volunteer123! |
+| Волонтер (очікує) | volunteer2@help.test | Volunteer123! |
+| Отримувач допомоги | beneficiary@help.test | Beneficiary123! |
+
+Демо-блок на сторінці входу показується у `development` або при `NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS=true`.
 
 ## Швидкий старт
 > **Вимоги:** Docker Desktop (із запущеним Docker Engine), Node.js 20+, npm 10+, Git.

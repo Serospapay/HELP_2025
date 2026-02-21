@@ -6,8 +6,9 @@ import {
   createCampaignShift,
   deleteCampaignShift,
   updateCampaignShift,
-} from "@/lib/endpoints";
-import { authStatusAtom, currentUserAtom, tokensAtom } from "@/lib/auth";
+} from "@/lib/api";
+import { authStatusAtom, tokensAtom } from "@/lib/auth";
+import { useCanEditCampaign } from "@/hooks/useRoles";
 import type { CampaignShift, CampaignShiftInput } from "@/types";
 import { cn, formatDate, formatTimeRange } from "@/lib/utils";
 import { useToast } from "@/components/common/toast/ToastContext";
@@ -25,8 +26,10 @@ export function CoordinatorShiftManager({
   initialShifts,
 }: CoordinatorShiftManagerProps) {
   const authStatus = useAtomValue(authStatusAtom);
-  const currentUser = useAtomValue(currentUserAtom);
   const tokens = useAtomValue(tokensAtom);
+  const canEditBase = useCanEditCampaign(coordinatorId);
+  const canEdit =
+    authStatus === "authenticated" && tokens?.access && canEditBase;
   const [shifts, setShifts] = useState(() =>
     [...initialShifts].sort((a, b) => a.start_at.localeCompare(b.start_at)),
   );
@@ -34,11 +37,6 @@ export function CoordinatorShiftManager({
   const [error, setError] = useState<string | null>(null);
   const [editingShift, setEditingShift] = useState<CampaignShift | null>(null);
   const { addToast } = useToast();
-
-  const canEdit =
-    authStatus === "authenticated" &&
-    tokens?.access &&
-    (currentUser?.role === "admin" || currentUser?.id === coordinatorId);
 
   const editingDefaults = useMemo(() => {
     if (!editingShift) return null;

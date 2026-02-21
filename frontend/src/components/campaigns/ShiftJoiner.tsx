@@ -11,7 +11,7 @@ import type { CampaignShift } from "@/types";
 import {
   joinCampaignShift,
   leaveCampaignShift,
-} from "@/lib/endpoints";
+} from "@/lib/api";
 import { cn, formatDate } from "@/lib/utils";
 import { useToast } from "@/components/common/toast/ToastContext";
 
@@ -30,11 +30,13 @@ export function ShiftJoiner({ campaignSlug, shifts }: ShiftJoinerProps) {
   const [loadingShiftId, setLoadingShiftId] = useState<number | null>(null);
   const { addToast } = useToast();
 
-  const isAuthenticated = authStatus === "authenticated";
+  const hasAccessToken = Boolean(tokens?.access);
+  const isAuthenticated =
+    authStatus === "authenticated" || (authStatus === "guest" && hasAccessToken);
 
   const approvalsRequired = useMemo(() => {
     if (!currentUser) return true;
-    return currentUser.role === "volunteer";
+    return currentUser.role === "volunteer" || currentUser.role === "beneficiary";
   }, [currentUser]);
 
   async function handleJoin(shiftId: number) {

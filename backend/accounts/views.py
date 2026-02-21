@@ -60,6 +60,3 @@ class MeView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return response.Response(serializer.data)
-from django.shortcuts import render
-
-# Create your views here.

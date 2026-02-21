@@ -10,6 +10,9 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
+
+from .models import UserRole
+
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -28,9 +31,10 @@ class UserSerializer(serializers.ModelSerializer):
             "phone_number",
             "is_verified",
             "is_active",
+            "is_staff",
             "date_joined",
         )
-        read_only_fields = ("id", "is_verified", "is_active", "date_joined")
+        read_only_fields = ("id", "is_verified", "is_active", "is_staff", "date_joined")
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -48,6 +52,17 @@ class RegisterSerializer(serializers.ModelSerializer):
             "role",
             "phone_number",
         )
+
+    def validate_role(self, value):
+        if value not in UserRole.values:
+            raise serializers.ValidationError(
+                f"Неприпустима роль. Дозволені: {', '.join(UserRole.values)}"
+            )
+        if value == UserRole.ADMIN:
+            raise serializers.ValidationError(
+                "Роль адміністратора присвоюється лише через Django admin."
+            )
+        return value
 
     def validate(self, attrs):
         if attrs["password"] != attrs["confirm_password"]:

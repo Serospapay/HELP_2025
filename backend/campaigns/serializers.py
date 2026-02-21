@@ -32,6 +32,13 @@ class CoordinatorMiniSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class CampaignMiniSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Campaign
+        fields = ("id", "title", "slug")
+        read_only_fields = fields
+
+
 class CampaignCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = CampaignCategory
@@ -116,6 +123,7 @@ class CampaignShiftSerializer(serializers.ModelSerializer):
 
 
 class VolunteerApplicationSerializer(serializers.ModelSerializer):
+    campaign = CampaignMiniSerializer(read_only=True)
     volunteer = CoordinatorMiniSerializer(read_only=True)
 
     class Meta:

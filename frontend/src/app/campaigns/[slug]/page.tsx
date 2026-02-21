@@ -8,6 +8,8 @@ import { VolunteerActions } from "@/components/campaigns/VolunteerActions";
 import { CoordinatorStageManager } from "@/components/campaigns/CoordinatorStageManager";
 import { CoordinatorShiftManager } from "@/components/campaigns/CoordinatorShiftManager";
 import { ShiftJoiner } from "@/components/campaigns/ShiftJoiner";
+import { CampaignStatsBlock } from "@/components/campaigns/CampaignStatsBlock";
+import { CampaignEditDelete } from "@/components/campaigns/CampaignEditDelete";
 
 interface CampaignPageProps {
   params: { slug: string };
@@ -66,7 +68,7 @@ export default async function CampaignDetailPage({ params }: CampaignPageProps) 
           <p className="max-w-3xl text-sm text-slate-300 md:text-base">
             {campaign.short_description}
           </p>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Link
               href={`/donations/new?campaign=${campaign.id}`}
               className="inline-flex items-center rounded-full bg-brand-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
@@ -79,11 +81,16 @@ export default async function CampaignDetailPage({ params }: CampaignPageProps) 
             >
               Подати заявку волонтера
             </Link>
+            <CampaignEditDelete campaign={campaign} />
           </div>
         </div>
       </header>
 
       <section className="container space-y-10">
+        <CampaignStatsBlock
+          campaignSlug={campaign.slug}
+          coordinatorId={campaign.coordinator?.id}
+        />
         <VolunteerActions
           campaignId={campaign.id}
           campaignSlug={campaign.slug}

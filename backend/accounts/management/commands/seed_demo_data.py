@@ -139,6 +139,8 @@ class Command(BaseCommand):
                 users["volunteer1"] = user
             elif spec.role == UserRole.VOLUNTEER:
                 users["volunteer2"] = user
+            elif spec.role == UserRole.BENEFICIARY:
+                users["beneficiary"] = user
         return users
 
     def _ensure_categories(self) -> dict[str, CampaignCategory]:
@@ -363,21 +365,13 @@ class Command(BaseCommand):
             if not shifts:
                 continue
 
-            # призначаємо волонтера 1 на першу зміну, волонтера 2 - на другу (якщо є)
+            # volunteer1 (approved) — призначаємо на першу зміну
             first_shift = shifts[0]
             ShiftAssignment.objects.get_or_create(
                 shift=first_shift,
                 volunteer=volunteer1,
                 defaults={"status": ApplicationStatus.APPROVED},
             )
-
-            if len(shifts) > 1:
-                second_shift = shifts[1]
-                ShiftAssignment.objects.get_or_create(
-                    shift=second_shift,
-                    volunteer=volunteer2,
-                    defaults={"status": ApplicationStatus.APPROVED},
-                )
 
         self.stdout.write("  • Заявки та зміни оновлено")
 

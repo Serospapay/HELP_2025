@@ -160,11 +160,10 @@ export async function findCampaignByTitle(
     throw new Error(`Не вдалося отримати кампанію "${title}": ${text}`);
   }
 
-  const data = (await response.json()) as Array<{
-    id: number;
-    slug: string;
-    title: string;
-  }>;
+  const raw = (await response.json()) as
+    | Array<{ id: number; slug: string; title: string }>
+    | { results: Array<{ id: number; slug: string; title: string }> };
+  const data = Array.isArray(raw) ? raw : raw.results;
 
   const match = data.find((item) => item.title === title);
   if (!match) {

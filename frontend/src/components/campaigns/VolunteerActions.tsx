@@ -8,7 +8,7 @@ import {
   applyForCampaign,
   getVolunteerApplications,
   updateVolunteerApplicationStatus,
-} from "@/lib/endpoints";
+} from "@/lib/api";
 import type { VolunteerApplication } from "@/types";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { cn } from "@/lib/utils";
@@ -41,7 +41,7 @@ export function VolunteerActions({
   const currentApplication = applications?.[0];
   const isCampaignCoordinator =
     user?.id && coordinatorId ? user.id === coordinatorId : false;
-  const isAdmin = user?.role === "admin";
+  const isAdminOrStaff = user?.role === "admin" || Boolean(user?.is_staff);
   const hasAccessToken = Boolean(tokens?.access);
   const effectiveAuthStatus =
     authStatus === "guest" && hasAccessToken ? "authenticated" : authStatus;
@@ -194,7 +194,7 @@ export function VolunteerActions({
     );
   }
 
-  if (isCampaignCoordinator || isAdmin) {
+  if (isCampaignCoordinator || isAdminOrStaff) {
     return (
       <div className="rounded-3xl border border-white/10 bg-slate-900/60 p-6 text-sm text-slate-300">
         Ви є координатором цієї кампанії. Керуйте заявками та змінами у власному

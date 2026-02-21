@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAtomValue } from "jotai";
-import { authStatusAtom, currentUserAtom, tokensAtom } from "@/lib/auth";
+import { authStatusAtom, tokensAtom } from "@/lib/auth";
+import { useIsAdmin, useIsCoordinatorOrAdmin } from "@/hooks/useRoles";
 import {
   getVolunteerApplications,
   updateVolunteerApplicationStatus,
-} from "@/lib/endpoints";
+} from "@/lib/api";
 import type { VolunteerApplication } from "@/types";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { cn, formatDate } from "@/lib/utils";
@@ -18,20 +19,18 @@ type FetchState = "idle" | "loading" | "success" | "error";
 
 export function CoordinatorApplicationsPanel() {
   const authStatus = useAtomValue(authStatusAtom);
-  const currentUser = useAtomValue(currentUserAtom);
   const tokens = useAtomValue(tokensAtom);
+  const isCoordinator = useIsCoordinatorOrAdmin();
+  const isAdmin = useIsAdmin();
   const [applications, setApplications] = useState<VolunteerApplication[]>([]);
   const [fetchState, setFetchState] = useState<FetchState>("idle");
   const [error, setError] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
   const { addToast } = useToast();
 
-  const isCoordinator =
-    authStatus === "authenticated" &&
-    (currentUser?.role === "coordinator" || currentUser?.role === "admin");
 
   useEffect(() => {
-    if (!isCoordinator || !tokens?.access) return;
+    if (!(authStatus === "authenticated" && isCoordinator) || !tokens?.access) return;
 
     let isMounted = true;
     setFetchState("loading");
@@ -55,7 +54,7 @@ export function CoordinatorApplicationsPanel() {
     return () => {
       isMounted = false;
     };
-  }, [isCoordinator, tokens]);
+  }, [authStatus, isCoordinator, tokens]);
 
   const grouped = useMemo(() => {
     return applications.reduce<Record<string, VolunteerApplication[]>>(
@@ -110,7 +109,7 @@ export function CoordinatorApplicationsPanel() {
     }
   }
 
-  if (!isCoordinator) return null;
+  if (!(authStatus === "authenticated" && isCoordinator)) return null;
 
   if (fetchState === "loading") {
     return (
@@ -141,10 +140,12 @@ export function CoordinatorApplicationsPanel() {
     <section className="space-y-4 rounded-3xl border border-white/10 bg-slate-900/60 p-6 shadow-lg shadow-black/20">
       <header className="space-y-1">
         <h2 className="text-lg font-semibold text-white">
-          Заявки, що потребують модерації
+          {isAdmin ? "Усі заявки волонтерів" : "Заявки, що потребують модерації"}
         </h2>
         <p className="text-xs text-slate-400">
-          Підтверджуйте волонтерів або відхиляйте заявки безпосередньо звідси.
+          {isAdmin
+            ? "Ви бачите заявки до всіх кампаній. Підтверджуйте або відхиляйте."
+            : "Підтверджуйте волонтерів або відхиляйте заявки безпосередньо звідси."}
         </p>
       </header>
       <div className="space-y-4">

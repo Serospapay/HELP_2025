@@ -79,5 +79,17 @@ class AuthFlowTests(APITestCase):
         self.assertEqual(response.data["email"], user.email)
         self.assertEqual(response.data["role"], UserRole.BENEFICIARY)
 
+    def test_register_admin_forbidden(self):
+        payload = {
+            "email": "hacker@example.com",
+            "password": "Str0ngPass!123",
+            "confirm_password": "Str0ngPass!123",
+            "role": UserRole.ADMIN,
+        }
+        response = self.client.post(self.register_url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("role", response.data)
+        self.assertFalse(User.objects.filter(email=payload["email"]).exists())
+
 
 

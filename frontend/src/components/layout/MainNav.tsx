@@ -8,7 +8,7 @@ import { useAtomValue } from "jotai";
 import { authStatusAtom, currentUserAtom, logoutAtom } from "@/lib/auth";
 import { useSetAtom } from "jotai";
 
-const NAV_LINKS = [
+const NAV_LINKS_PUBLIC = [
   { href: "/", label: "Головна" },
   { href: "/campaigns", label: "Кампанії" },
   { href: "/donations/new", label: "Зробити внесок" },
@@ -41,7 +41,7 @@ export function MainNav() {
           </Link>
         </div>
         <nav className="hidden items-center gap-2 md:flex" aria-label="Головна навігація">
-          {NAV_LINKS.map((link) => {
+          {NAV_LINKS_PUBLIC.map((link) => {
             const isActive =
               link.href === "/"
                 ? pathname === "/"
@@ -65,6 +65,17 @@ export function MainNav() {
         <div className="hidden items-center gap-3 md:flex">
           {authStatus === "authenticated" ? (
             <>
+              <Link
+                href="/dashboard"
+                className={cn(
+                  "rounded-full px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
+                  pathname.startsWith("/dashboard")
+                    ? "bg-white text-slate-900"
+                    : "text-slate-200 hover:bg-white/10",
+                )}
+              >
+                Кабінет
+              </Link>
               <span className="text-sm text-slate-200">
                 {currentUser?.first_name || currentUser?.email}
               </span>
@@ -133,7 +144,7 @@ export function MainNav() {
         aria-label="Мобільна навігація"
       >
         <ul className="space-y-1 border-t border-white/10 bg-slate-900/95 px-4 py-3 shadow-lg backdrop-blur transition">
-          {NAV_LINKS.map((link) => {
+          {NAV_LINKS_PUBLIC.map((link) => {
             const isActive =
               link.href === "/"
                 ? pathname === "/"
@@ -155,8 +166,24 @@ export function MainNav() {
               </li>
             );
           })}
+          {authStatus === "authenticated" && (
+            <li>
+              <Link
+                href="/dashboard"
+                onClick={closeMenu}
+                className={cn(
+                  "block rounded-lg px-4 py-3 text-base font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900",
+                  pathname.startsWith("/dashboard")
+                    ? "bg-brand-500 text-white"
+                    : "text-slate-200 hover:bg-white/10",
+                )}
+              >
+                Кабінет
+              </Link>
+            </li>
+          )}
         </ul>
-        <li className="border-t border-white/10 pt-3">
+        <div className="border-t border-white/10 pt-3">
           {authStatus === "authenticated" ? (
             <button
               type="button"
@@ -186,7 +213,7 @@ export function MainNav() {
               </Link>
             </div>
           )}
-        </li>
+        </div>
       </nav>
     </header>
   );

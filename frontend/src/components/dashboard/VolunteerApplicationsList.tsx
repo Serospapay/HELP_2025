@@ -7,13 +7,19 @@ import { authStatusAtom, tokensAtom } from "@/lib/auth";
 import {
   getVolunteerApplications,
   updateVolunteerApplicationStatus,
-} from "@/lib/endpoints";
+} from "@/lib/api";
 import type { VolunteerApplication } from "@/types";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { ConfirmDialog } from "@/components/common/confirm/ConfirmDialog";
 import { useToast } from "@/components/common/toast/ToastContext";
 
-export function VolunteerApplicationsList() {
+interface VolunteerApplicationsListProps {
+  titleOverride?: string;
+}
+
+export function VolunteerApplicationsList({
+  titleOverride,
+}: VolunteerApplicationsListProps = {}) {
   const authStatus = useAtomValue(authStatusAtom);
   const tokens = useAtomValue(tokensAtom);
   const [applications, setApplications] = useState<VolunteerApplication[]>([]);
@@ -83,7 +89,9 @@ export function VolunteerApplicationsList() {
 
   return (
     <div className="space-y-4 rounded-3xl border border-white/10 bg-slate-900/60 p-6 shadow-lg shadow-black/20">
-      <h2 className="text-lg font-semibold text-white">Мої заявки</h2>
+      <h2 className="text-lg font-semibold text-white">
+        {titleOverride ?? "Мої заявки"}
+      </h2>
       <ul className="space-y-3 text-sm">
         {applications.map((application) => {
           const canWithdraw =

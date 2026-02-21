@@ -7,7 +7,7 @@
  */
 """
 
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, Prefetch, Q, Sum
 from django.utils import timezone
 from rest_framework import decorators, mixins, permissions, response, status, viewsets
 from rest_framework.exceptions import PermissionDenied
@@ -41,11 +41,16 @@ from .serializers import (
 )
 
 
+def _shifts_queryset_with_spots():
+    return CampaignShift.objects.annotate(
+        occupied_spots=Count("assignments", filter=Q(assignments__status=ApplicationStatus.APPROVED), distinct=True),
+    ).prefetch_related("assignments")
+
+
 class CampaignViewSet(viewsets.ModelViewSet):
     queryset = Campaign.objects.select_related("category", "coordinator").prefetch_related(
         "stages",
-        "shifts",
-        "shifts__assignments",
+        Prefetch("shifts", queryset=_shifts_queryset_with_spots()),
     )
     permission_classes = (IsCoordinatorOrReadOnly,)
     lookup_field = "slug"
@@ -88,6 +93,8 @@ class CampaignViewSet(viewsets.ModelViewSet):
                 | Q(short_description__icontains=search)
                 | Q(description__icontains=search)
             )
+        if params.get("has_funding") == "true":
+            qs = qs.filter(target_amount__gt=0)
         return qs
 
     def get_serializer_class(self):
@@ -255,7 +262,18 @@ class CampaignShiftViewSet(viewsets.ModelViewSet):
     permission_classes = (IsCoordinatorOrReadOnly,)
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = (
+            super()
+            .get_queryset()
+            .annotate(
+                occupied_spots=Count(
+                    "assignments",
+                    filter=Q(assignments__status=ApplicationStatus.APPROVED),
+                    distinct=True,
+                ),
+            )
+            .prefetch_related("assignments")
+        )
         campaign = self.request.query_params.get("campaign")
         if campaign:
             qs = qs.filter(campaign__slug=campaign)

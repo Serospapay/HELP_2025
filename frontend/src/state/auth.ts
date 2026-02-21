@@ -2,7 +2,7 @@
 
 import { atom } from "jotai";
 import { authStatusAtom, currentUserAtom, tokensAtom } from "@/lib/auth";
-import { login, register } from "@/lib/endpoints";
+import { login, register } from "@/lib/api";
 
 interface LoginInput {
   email: string;

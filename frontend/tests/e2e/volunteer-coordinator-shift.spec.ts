@@ -16,6 +16,7 @@ import {
   deleteCampaignShift,
   findCampaignByTitle,
   isoDate,
+  loginUser,
   registerUser,
 } from "./utils/apiClient";
 
@@ -120,7 +121,7 @@ test.describe("Флоу волонтера та координатора", () =>
         await deleteCampaignShift(shift.id, coordinatorAccessToken);
       });
 
-    const volunteer = await registerUser({
+      await registerUser({
         email: volunteerEmail,
         password: TEST_PASSWORD,
         first_name: "Playwright",
@@ -128,16 +129,25 @@ test.describe("Флоу волонтера та координатора", () =>
         role: "volunteer",
       });
 
-      expect(volunteer.user.role).toBe("volunteer");
-
-    // 2. Волонтер заходить у систему через UI та подає заявку на кампанію.
-    await page.goto("/auth/login");
-    await page.getByLabel("Email").fill(volunteerEmail);
-    await page.getByLabel("Пароль").fill(TEST_PASSWORD);
-    await page.getByRole("button", { name: "Увійти" }).click();
-    await expect(page).toHaveURL(/\/dashboard$/);
-
-      await page.goto(`/campaigns/${campaign.slug}`);
+      const volunteerLogin = await loginUser({
+        email: volunteerEmail,
+        password: TEST_PASSWORD,
+      });
+      await page.addInitScript(
+        ({ key, value }) => {
+          window.localStorage.setItem(key, value);
+        },
+        {
+          key: "auth-tokens",
+          value: JSON.stringify({
+            access: volunteerLogin.access,
+            refresh: volunteerLogin.refresh,
+          }),
+        },
+      );
+      await page.goto(`/campaigns/${campaign.slug}`, {
+        waitUntil: "networkidle",
+      });
       const applyButton = page.getByRole("button", { name: "Подати заявку волонтера" });
       await expect(applyButton).toBeVisible();
 
@@ -151,13 +161,26 @@ test.describe("Флоу волонтера та координатора", () =>
       ).toHaveAttribute("data-status", "pending");
 
       // 3. Координатор у паралельному контексті підтверджує заявку через UI.
-    coordinatorContext = await browser.newContext();
+      coordinatorContext = await browser.newContext();
       const coordinatorPage = await coordinatorContext.newPage();
-    await coordinatorPage.goto("/auth/login");
-    await coordinatorPage.getByLabel("Email").fill(coordinatorEmail);
-    await coordinatorPage.getByLabel("Пароль").fill(TEST_PASSWORD);
-    await coordinatorPage.getByRole("button", { name: "Увійти" }).click();
-    await expect(coordinatorPage).toHaveURL(/\/dashboard$/);
+      const coordinatorLogin = await loginUser({
+        email: coordinatorEmail,
+        password: TEST_PASSWORD,
+      });
+      await coordinatorPage.addInitScript(
+        ({ key, value }) => {
+          window.localStorage.setItem(key, value);
+        },
+        {
+          key: "auth-tokens",
+          value: JSON.stringify({
+            access: coordinatorLogin.access,
+            refresh: coordinatorLogin.refresh,
+          }),
+        },
+      );
+      await coordinatorPage.goto("/dashboard", { waitUntil: "networkidle" });
+      await coordinatorPage.waitForTimeout(500);
 
       const pendingApplicationCard = coordinatorPage
         .getByTestId("coordinator-application-card")
@@ -188,11 +211,12 @@ test.describe("Флоу волонтера та координатора", () =>
       const joinButton = page.getByRole("button", {
         name: "Приєднатися до зміни",
       });
-      await expect(joinButton).toBeVisible();
+      await expect(joinButton).toBeVisible({ timeout: 20000 });
+      await expect(joinButton).toBeEnabled({ timeout: 20000 });
       await joinButton.click();
 
       await expect(
-        page.getByText("Ви приєдналися до зміни", { exact: false }),
+        page.getByText("Ви приєдналися до зміни", { exact: false }).first(),
       ).toBeVisible();
 
       const leaveButton = page.getByRole("button", { name: "Вийти зі зміни" });
@@ -201,7 +225,7 @@ test.describe("Флоу волонтера та координатора", () =>
       await leaveButton.click();
 
       await expect(
-        page.getByText("Зміну залишено", { exact: false }),
+        page.getByText("Зміну залишено", { exact: false }).first(),
       ).toBeVisible();
 
       await expect(

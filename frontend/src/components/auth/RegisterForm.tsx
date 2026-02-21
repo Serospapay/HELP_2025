@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSetAtom } from "jotai";
 import { registerAtom } from "@/state/auth";
 import { cn } from "@/lib/utils";
-import { UserRoleLabels } from "@/constants/roles";
+import { UserRoleLabels, REGISTRABLE_ROLES, type UserRole } from "@/constants/roles";
 
 interface RegisterFormState {
   error?: string;
@@ -29,7 +29,8 @@ export function RegisterForm() {
     const confirmPassword = String(formData.get("confirm_password") || "");
     const firstName = String(formData.get("first_name") || "").trim();
     const lastName = String(formData.get("last_name") || "").trim();
-    const role = String(formData.get("role") || "volunteer");
+    const rawRole = String(formData.get("role") || "volunteer");
+    const role = REGISTRABLE_ROLES.includes(rawRole as UserRole) ? rawRole : "volunteer";
     const phoneNumber = String(formData.get("phone_number") || "").trim();
 
     if (!email || !password) {
@@ -146,9 +147,9 @@ export function RegisterForm() {
             defaultValue="volunteer"
             className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-sm text-slate-100 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-400/60"
           >
-            {Object.entries(UserRoleLabels).map(([role, label]) => (
+            {REGISTRABLE_ROLES.map((role) => (
               <option key={role} value={role}>
-                {label}
+                {UserRoleLabels[role]}
               </option>
             ))}
           </select>
